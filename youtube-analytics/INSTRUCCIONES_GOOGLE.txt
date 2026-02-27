@@ -1,0 +1,87 @@
+================================================
+ COMO OBTENER LAS CREDENCIALES DE GOOGLE
+ Para YouTube Analytics Dashboard - @AIrtVids
+================================================
+
+Necesitas hacer esto UNA SOLA VEZ. Tarda unos 10 minutos.
+
+-----------------------------------------------
+PASO 1: Ir a Google Cloud Console
+-----------------------------------------------
+1. Abre tu navegador
+2. Ve a: https://console.cloud.google.com
+3. Inicia sesion con tu cuenta de Google (la misma de YouTube)
+
+-----------------------------------------------
+PASO 2: Crear un proyecto nuevo
+-----------------------------------------------
+1. Arriba a la izquierda, haz clic donde dice "Select a project"
+2. Clic en "NEW PROJECT" (arriba a la derecha del popup)
+3. En "Project name" escribe: YouTube Analytics
+4. Clic en "CREATE"
+5. Espera unos segundos y selecciona ese proyecto
+
+-----------------------------------------------
+PASO 3: Activar las APIs de YouTube
+-----------------------------------------------
+1. En el menu de la izquierda, busca "APIs & Services"
+2. Clic en "Library"
+3. En el buscador escribe: "YouTube Data API v3"
+4. Clic en ese resultado -> clic en "ENABLE"
+5. Vuelve atras (flecha del navegador)
+6. En el buscador escribe: "YouTube Analytics API"
+7. Clic en ese resultado -> clic en "ENABLE"
+
+-----------------------------------------------
+PASO 4: Crear la pantalla de consentimiento
+-----------------------------------------------
+1. En el menu, clic en "APIs & Services" -> "OAuth consent screen"
+2. Selecciona "External" -> clic "CREATE"
+3. En "App name" escribe: YouTube Analytics Dashboard
+4. En "User support email" pon tu email
+5. En "Developer contact information" pon tu email
+6. Clic "SAVE AND CONTINUE" (3 veces hasta llegar a "Summary")
+7. En "Summary", busca "Test users" -> clic "ADD USERS"
+8. Escribe tu email de YouTube/Google -> clic "ADD"
+9. Clic "SAVE AND CONTINUE"
+
+-----------------------------------------------
+PASO 5: Crear las credenciales OAuth2
+-----------------------------------------------
+1. En el menu, clic en "APIs & Services" -> "Credentials"
+2. Clic en "+ CREATE CREDENTIALS" -> "OAuth client ID"
+3. En "Application type" selecciona: "Web application"
+4. En "Name" escribe: Dashboard Local
+5. Busca "Authorized redirect URIs" -> clic "ADD URI"
+6. Escribe exactamente: http://localhost:8000/auth/callback
+7. Clic "CREATE"
+8. Aparecera una ventana con tu "Client ID" y "Client Secret"
+   IMPORTANTE: Copialos o descarga el JSON, los necesitaras!
+
+-----------------------------------------------
+PASO 6: Poner las credenciales en el .env
+-----------------------------------------------
+1. Abre la carpeta "youtube-analytics"
+2. Abre la carpeta "backend"
+3. Haz clic derecho en el archivo ".env" -> "Abrir con" -> "Bloc de notas"
+   (Si no ves el archivo .env, activa "Mostrar archivos ocultos" en el Explorador)
+4. Busca estas dos lineas y reemplaza el texto:
+
+   GOOGLE_CLIENT_ID=PEGA_AQUI_TU_CLIENT_ID
+   GOOGLE_CLIENT_SECRET=PEGA_AQUI_TU_CLIENT_SECRET
+
+5. Guarda el archivo (Ctrl+S)
+
+-----------------------------------------------
+PASO 7: Iniciar el dashboard
+-----------------------------------------------
+1. Vuelve a la carpeta "youtube-analytics"
+2. Haz doble clic en "2_INICIAR.bat"
+3. Se abrira el dashboard en tu navegador
+4. Haz clic en "Conectar con Google / YouTube"
+5. Inicia sesion con tu cuenta de YouTube
+6. Listo! Ya puedes ver todas tus metricas
+
+================================================
+ Si tienes algun problema, dile a Kilo que te ayude
+================================================
