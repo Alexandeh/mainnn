@@ -49,7 +49,7 @@ CACHE_TTL = 1800  # 30 minutos
 def cache_get(key: str):
     if key in _cache:
         data, ts = _cache[key]
-        if (datetime.now() - ts).seconds < CACHE_TTL:
+        if (datetime.now() - ts).total_seconds() < CACHE_TTL:
             return data
         del _cache[key]
     return None
@@ -219,52 +219,9 @@ async def videos_metrics(
     return metrics
 
 
-@app.get("/videos/{video_id}/retention", response_model=RetentionData, tags=["Videos"])
-async def video_retention(video_id: str):
-    """Curva de retención de audiencia para un video específico."""
-    cache_key = f"retention_{video_id}"
-    cached = cache_get(cache_key)
-    if cached:
-        return cached
-
-    creds = get_credentials()
-    if not creds:
-        raise HTTPException(status_code=401, detail="No autenticado")
-
-    retention = get_audience_retention(video_id)
-    if not retention:
-        raise HTTPException(status_code=404, detail=f"No se encontraron datos de retención para {video_id}")
-
-    cache_set(cache_key, retention)
-    return retention
-
-
-@app.get("/videos/{video_id}/traffic", response_model=VideoTraffic, tags=["Videos"])
-async def video_traffic(
-    video_id: str,
-    start_date: Optional[str] = Query(default=None),
-    end_date: Optional[str] = Query(default=None),
-):
-    """Fuentes de tráfico para un video específico."""
-    cache_key = f"traffic_{video_id}_{start_date}_{end_date}"
-    cached = cache_get(cache_key)
-    if cached:
-        return cached
-
-    creds = get_credentials()
-    if not creds:
-        raise HTTPException(status_code=401, detail="No autenticado")
-
-    channel_id = svc_get_channel_id()
-    if not channel_id:
-        raise HTTPException(status_code=404, detail="Canal no encontrado")
-
-    traffic = get_traffic_sources(channel_id, video_id, start_date, end_date)
-    cache_set(cache_key, traffic)
-    return traffic
-
-
 # ─── Comparison & Analysis ─────────────────────────────────────────────────────
+# IMPORTANTE: estas rutas estáticas deben estar ANTES de las rutas con {video_id}
+# para que FastAPI no confunda "comparison" con un video_id.
 
 @app.get("/videos/comparison", response_model=VideoComparison, tags=["Analysis"])
 async def videos_comparison(
@@ -309,6 +266,53 @@ async def videos_comparison(
     )
     cache_set(cache_key, comparison)
     return comparison
+
+
+# ─── Video detail endpoints (con {video_id}) — DEBEN ir DESPUÉS de las rutas estáticas ───
+
+@app.get("/videos/{video_id}/retention", response_model=RetentionData, tags=["Videos"])
+async def video_retention(video_id: str):
+    """Curva de retención de audiencia para un video específico."""
+    cache_key = f"retention_{video_id}"
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
+    creds = get_credentials()
+    if not creds:
+        raise HTTPException(status_code=401, detail="No autenticado")
+
+    retention = get_audience_retention(video_id)
+    if not retention:
+        raise HTTPException(status_code=404, detail=f"No se encontraron datos de retención para {video_id}")
+
+    cache_set(cache_key, retention)
+    return retention
+
+
+@app.get("/videos/{video_id}/traffic", response_model=VideoTraffic, tags=["Videos"])
+async def video_traffic(
+    video_id: str,
+    start_date: Optional[str] = Query(default=None),
+    end_date: Optional[str] = Query(default=None),
+):
+    """Fuentes de tráfico para un video específico."""
+    cache_key = f"traffic_{video_id}_{start_date}_{end_date}"
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
+    creds = get_credentials()
+    if not creds:
+        raise HTTPException(status_code=401, detail="No autenticado")
+
+    channel_id = svc_get_channel_id()
+    if not channel_id:
+        raise HTTPException(status_code=404, detail="Canal no encontrado")
+
+    traffic = get_traffic_sources(channel_id, video_id, start_date, end_date)
+    cache_set(cache_key, traffic)
+    return traffic
 
 
 @app.get("/insights", response_model=AIInsights, tags=["Analysis"])

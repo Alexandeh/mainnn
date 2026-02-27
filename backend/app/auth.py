@@ -49,13 +49,11 @@ def exchange_code_for_token(code: str) -> dict:
     flow.fetch_token(code=code)
     credentials = flow.credentials
 
-    # Guardar tokens
+    # Guardar tokens — NO guardamos client_secret (ya está en .env)
     token_data = {
         "token": credentials.token,
         "refresh_token": credentials.refresh_token,
         "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
         "scopes": list(credentials.scopes) if credentials.scopes else YOUTUBE_SCOPES,
     }
     with open(TOKEN_FILE, "w") as f:
@@ -76,8 +74,9 @@ def get_credentials() -> Optional[Credentials]:
         token=token_data.get("token"),
         refresh_token=token_data.get("refresh_token"),
         token_uri=token_data.get("token_uri", "https://oauth2.googleapis.com/token"),
-        client_id=token_data.get("client_id", settings.google_client_id),
-        client_secret=token_data.get("client_secret", settings.google_client_secret),
+        # client_id y client_secret vienen siempre del .env (no se guardan en token.json)
+        client_id=settings.google_client_id,
+        client_secret=settings.google_client_secret,
         scopes=token_data.get("scopes", YOUTUBE_SCOPES),
     )
 
