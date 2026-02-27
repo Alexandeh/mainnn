@@ -26,6 +26,22 @@ def _parse_duration(duration: str) -> str:
     return f"{minutes}:{seconds:02d}"
 
 
+def _duration_seconds(duration: str) -> int:
+    """Devuelve la duración total en segundos desde ISO 8601 (PT4M30S)."""
+    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration)
+    if not match:
+        return 0
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2) or 0)
+    seconds = int(match.group(3) or 0)
+    return hours * 3600 + minutes * 60 + seconds
+
+
+def _is_short(duration: str) -> bool:
+    """Devuelve True si el video es un Short (duración <= 60 segundos)."""
+    return _duration_seconds(duration) <= 60
+
+
 def get_channel_id_from_handle(handle: str) -> Optional[str]:
     """Obtiene el channel ID desde el handle (@AIrtVids)."""
     creds = get_credentials()
@@ -137,6 +153,12 @@ def get_all_videos(channel_id: str, max_videos: int = 200) -> List[VideoSummary]
             for item in response.get("items", []):
                 snippet = item.get("snippet", {})
                 content = item.get("contentDetails", {})
+                raw_duration = content.get("duration", "PT0S")
+
+                # Ignorar Shorts (videos <= 60 segundos)
+                if _is_short(raw_duration):
+                    continue
+
                 thumbnails = snippet.get("thumbnails", {})
                 thumb_url = (
                     thumbnails.get("maxres", {}).get("url") or
@@ -150,7 +172,7 @@ def get_all_videos(channel_id: str, max_videos: int = 200) -> List[VideoSummary]
                     description=snippet.get("description", ""),
                     published_at=snippet.get("publishedAt", ""),
                     thumbnail_url=thumb_url,
-                    duration=_parse_duration(content.get("duration", "PT0S")),
+                    duration=_parse_duration(raw_duration),
                     tags=snippet.get("tags", []),
                 ))
         except HttpError as e:
@@ -389,11 +411,16 @@ def get_traffic_sources(
         ).execute()
 
         rows = response.get("rows", [])
+        # Excluir filas de Shorts al calcular el total
         for row in rows:
-            total_views += int(row[1]) if len(row) > 1 else 0
+            if row[0] not in ("SHORTS", "VIDEO_REMIXED"):
+                total_views += int(row[1]) if len(row) > 1 else 0
 
         for row in rows:
             source_type = row[0]
+            # Omitir fuentes de tráfico originadas en Shorts
+            if source_type in ("SHORTS", "VIDEO_REMIXED"):
+                continue
             views = int(row[1]) if len(row) > 1 else 0
             watch_time = float(row[2]) if len(row) > 2 else 0
             pct = (views / total_views * 100) if total_views > 0 else 0

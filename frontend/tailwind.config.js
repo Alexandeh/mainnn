@@ -8,10 +8,7 @@ export default {
           950: '#0a0a0f',
         },
       },
-      fontFamily: {
-        sans: ['Orbitron', 'Share Tech Mono', 'monospace'],
-        mono: ['Share Tech Mono', 'monospace'],
-      },
+
     },
   },
   plugins: [],
