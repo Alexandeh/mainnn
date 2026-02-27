@@ -150,7 +150,7 @@ export default function App() {
               <Dashboard onSelectVideo={handleSelectVideo} selectedVideoId={selectedVideoId ?? undefined} />
             )}
             {activeTab === 'dashboard' && selectedVideoId && (
-              <VideoDetail videoId={selectedVideoId} onBack={handleBackFromVideo} />
+              <VideoDetail videoId={selectedVideoId} onBack={handleBackFromVideo} onSelectVideo={handleSelectVideo} />
             )}
             {activeTab === 'comparison' && (
               <Comparison onSelectVideo={(id) => { setSelectedVideoId(id); setActiveTab('dashboard') }} />
